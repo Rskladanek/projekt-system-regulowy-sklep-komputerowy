@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Podsumowanie{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h1 class="mb-1">Podsumowanie zamówienia</h1>
+        <p class="text-muted mb-0">Koszyk nr {{ cart.id }} z dnia {{ cart.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+    </div>
+    <a class="btn btn-outline-primary" href="{{ url_for('main.products') }}">Nowe zamówienie</a>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h3 class="card-title h5 mb-3">Pozycje koszyka</h3>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Produkt</th>
+                                <th>Kategoria</th>
+                                <th>Ilość</th>
+                                <th>Cena/szt.</th>
+                                <th>Wartość</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart.items %}
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td>{{ item.product.category }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.unit_price|money }}</td>
+                                    <td>{{ (item.unit_price * item.quantity)|money }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h3 class="card-title h5 mb-3">Wynik końcowy</h3>
+                <dl class="summary-list mb-0">
+                    <div>
+                        <dt>Przed rabatami</dt>
+                        <dd>{{ cart.total_before|money }}</dd>
+                    </div>
+                    <div>
+                        <dt>Łączny rabat</dt>
+                        <dd>- {{ cart.total_discount|money }}</dd>
+                    </div>
+                    <div>
+                        <dt>Dostawa</dt>
+                        <dd>{{ cart.shipping_cost|money }}</dd>
+                    </div>
+                    <div class="summary-total">
+                        <dt>Do zapłaty</dt>
+                        <dd>{{ cart.total_after|money }}</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h3 class="card-title h5 mb-3">Aktywne promocje</h3>
+                {% if cart.promotion_results %}
+                    <div class="list-group list-group-flush">
+                        {% for promotion in cart.promotion_results %}
+                            <div class="list-group-item px-0">
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <div>
+                                        <div class="fw-semibold">{{ promotion.rule_code }} — {{ promotion.rule_name }}</div>
+                                        <div class="text-muted small">{{ promotion.description }}</div>
+                                    </div>
+                                    <span class="badge text-bg-success">- {{ promotion.discount_value|money }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Brak aktywnych promocji dla tego koszyka.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h3 class="card-title h5 mb-3">Log działania silnika reguł</h3>
+                <div class="list-group list-group-flush">
+                    {% for log in logs %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between gap-3">
+                                <div>
+                                    <div class="fw-semibold">{{ log.rule_code }}</div>
+                                    <div class="text-muted small">{{ log.note }}</div>
+                                </div>
+                                <span class="badge {{ 'text-bg-success' if log.matched else 'text-bg-secondary' }}">{{ 'PASSED' if log.matched else 'NO MATCH' }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

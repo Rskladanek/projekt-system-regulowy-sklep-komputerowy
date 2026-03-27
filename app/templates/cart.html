@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Koszyk{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h1 class="mb-1">Koszyk</h1>
+        <p class="text-muted mb-0">Tutaj powstają fakty dla silnika reguł.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('main.products') }}">Wróć do produktów</a>
+</div>
+
+{% if items %}
+    <form method="post" action="{{ url_for('main.update_cart') }}">
+        <div class="table-responsive mb-4">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Produkt</th>
+                        <th>Kategoria</th>
+                        <th>Cena</th>
+                        <th>Ilość</th>
+                        <th>Wartość</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.product.name }}</strong><br>
+                                <span class="text-muted small">{{ item.product.brand }}</span>
+                            </td>
+                            <td>{{ item.product.category }}</td>
+                            <td>{{ item.unit_price|money }}</td>
+                            <td style="max-width: 120px;">
+                                <input type="number" min="1" class="form-control" name="quantity_{{ item.product.id }}" value="{{ item.quantity }}">
+                            </td>
+                            <td>{{ item.line_total|money }}</td>
+                            <td class="text-end">
+                                <button type="submit" formmethod="post" formaction="{{ url_for('main.remove_from_cart', product_id=item.product.id) }}" class="btn btn-sm btn-outline-danger">Usuń</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex gap-2 flex-wrap">
+                <button type="submit" class="btn btn-outline-primary">Zapisz ilości</button>
+            </div>
+            <div class="cart-total-box">
+                <div class="text-muted">Wartość koszyka przed rabatami</div>
+                <div class="fs-4 fw-bold">{{ subtotal|money }}</div>
+            </div>
+        </div>
+    </form>
+
+    <div class="d-flex gap-2 mt-4 flex-wrap">
+        <form method="post" action="{{ url_for('main.analyze_cart') }}">
+            <button type="submit" class="btn btn-success">Uruchom analizę promocji</button>
+        </form>
+        <form method="post" action="{{ url_for('main.clear_current_cart') }}">
+            <button type="submit" class="btn btn-outline-danger">Wyczyść koszyk</button>
+        </form>
+    </div>
+{% else %}
+    <div class="empty-box text-center p-5 rounded-4 shadow-sm bg-white">
+        <h3>Koszyk jest pusty</h3>
+        <p class="text-muted">Dodaj produkty z katalogu i dopiero wtedy odpal analizę reguł.</p>
+        <a class="btn btn-primary" href="{{ url_for('main.products') }}">Przejdź do katalogu</a>
+    </div>
+{% endif %}
+{% endblock %}
